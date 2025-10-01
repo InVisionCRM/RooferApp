@@ -5,9 +5,24 @@ import type React from "react"
 // TypeScript declarations for Speech Recognition API
 declare global {
   interface Window {
-    SpeechRecognition: any
-    webkitSpeechRecognition: any
+    SpeechRecognition: SpeechRecognitionConstructor
+    webkitSpeechRecognition: SpeechRecognitionConstructor
   }
+}
+
+interface SpeechRecognitionInterface {
+  continuous: boolean
+  interimResults: boolean
+  lang: string
+  onstart: (() => void) | null
+  onresult: ((event: unknown) => void) | null
+  onerror: (() => void) | null
+  onend: (() => void) | null
+  start: () => void
+}
+
+interface SpeechRecognitionConstructor {
+  new(): SpeechRecognitionInterface
 }
 
 import { useState, useRef, useEffect } from "react"

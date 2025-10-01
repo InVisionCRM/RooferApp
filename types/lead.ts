@@ -18,7 +18,7 @@ export interface Lead {
   longitude: number | null
   createdAt: Date
   updatedAt: Date
-  metadata?: Record<string, any> | null
+  metadata?: Record<string, unknown> | null
   googleDriveFolderId?: string | null
 }
 

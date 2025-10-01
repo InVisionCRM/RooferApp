@@ -222,7 +222,7 @@ export default function JobDetailPage() {
                 <Camera className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                 <CardTitle className="text-lg mb-2">No Photos Yet</CardTitle>
                 <CardDescription>
-                  Tap "Take Photo" above to capture your first photo
+                  Tap &quot;Take Photo&quot; above to capture your first photo
                 </CardDescription>
               </CardContent>
             </Card>

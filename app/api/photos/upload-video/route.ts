@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
         thumbnailUrl: blob.url,
         mimeType: file.type,
         size: file.size,
-        uploadedById: (session.user as any).id || null,
+        uploadedById: (session.user as { id?: string }).id || null,
       },
     })
 

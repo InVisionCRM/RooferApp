@@ -191,8 +191,8 @@ export default function TakePhotoModal({ open, onOpenChange, leadId, onPhotoSave
 
   const startSpeechRecognition = () => {
     if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) return
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
-    const recognition = new SpeechRecognition()
+    const SpeechRecognition = (window as { SpeechRecognition?: unknown; webkitSpeechRecognition?: unknown }).SpeechRecognition || (window as { SpeechRecognition?: unknown; webkitSpeechRecognition?: unknown }).webkitSpeechRecognition
+    const recognition = new (SpeechRecognition as { new(): unknown })()
     recognition.continuous = false
     recognition.interimResults = false
     recognition.lang = "en-US"
@@ -200,7 +200,7 @@ export default function TakePhotoModal({ open, onOpenChange, leadId, onPhotoSave
     recognition.onresult = (event: unknown) => {
       try {
         const results = (event as { results?: ArrayLike<{ 0?: { transcript?: string } }> }).results
-        const first = results && (results[0] as { 0?: { transcript?: string } })
+        const first = results?.[0] as { 0?: { transcript?: string } } | undefined
         const transcript = first?.[0]?.transcript
         if (typeof transcript === "string") {
           setDescription((prev) => prev + (prev ? " " : "") + transcript)

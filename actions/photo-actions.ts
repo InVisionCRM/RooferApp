@@ -25,7 +25,7 @@ interface SerializedFile {
 
 interface LeadMetadata {
   photosFolderId?: string
-  [key: string]: any
+  [key: string]: unknown
 }
 
 /**
@@ -110,7 +110,7 @@ export async function createPhotosFolder(leadId: string) {
       where: { id: leadId },
       data: {
         metadata: {
-          ...(lead.metadata as Record<string, any> || {}),
+          ...(lead.metadata as Record<string, unknown> || {}),
           photosFolderId: folderResult.data.id
         }
       }

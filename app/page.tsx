@@ -27,7 +27,7 @@ export default function HomePage() {
   const fetchJobs = async () => {
     try {
       setLoading(true)
-      const phone = (session?.user as any)?.phone
+      const phone = (session?.user as { phone?: string })?.phone
       if (!phone) return
 
       const response = await fetch(`/api/photo-assignments/${phone}`)
@@ -103,7 +103,7 @@ export default function HomePage() {
               <Camera className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
               <CardTitle className="mb-2">No Photo Jobs Yet</CardTitle>
               <CardDescription>
-                You don't have any assigned photo jobs at the moment.
+                You don&apos;t have any assigned photo jobs at the moment.
                 <br />
                 Contact your supervisor if you believe this is an error.
               </CardDescription>

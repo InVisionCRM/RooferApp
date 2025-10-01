@@ -87,7 +87,7 @@ export function useContractorLeads(contractorPhone: string) {
 
       if (data.success && data.assignments) {
         // Extract leads from assignments
-        const leadsData = data.assignments.map((assignment: any) => assignment.lead)
+        const leadsData = data.assignments.map((assignment: { lead: unknown }) => assignment.lead)
         setLeads(leadsData)
       } else {
         throw new Error(data.error || "Failed to fetch assignments")
