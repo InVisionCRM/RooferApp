@@ -35,9 +35,29 @@ export default function PhotoCanvas({ imageUrl, onSave, initialAnnotations, isSa
     const ctx = canvas.getContext("2d")
     if (!ctx) return
 
-    // Set canvas size
-    canvas.width = canvas.clientWidth
-    canvas.height = canvas.clientHeight
+    // Set canvas size based on viewport for fullscreen, or container for normal
+    const setCanvasSize = () => {
+      if (fullScreen) {
+        // For fullscreen, set logical size to match viewport
+        canvas.width = window.innerWidth
+        canvas.height = window.innerHeight
+        canvas.style.width = '100%'
+        canvas.style.height = '100%'
+      } else {
+        canvas.width = canvas.clientWidth
+        canvas.height = canvas.clientHeight
+      }
+      
+      // Redraw after resize
+      if (imageLoaded && imageRef.current) {
+        drawImageAndLines(imageRef.current, lines)
+      }
+    }
+
+    setCanvasSize()
+
+    // Re-size canvas on window resize (important for mobile orientation changes)
+    window.addEventListener('resize', setCanvasSize)
 
     // Create and load image
     const img = document.createElement('img')
@@ -55,12 +75,13 @@ export default function PhotoCanvas({ imageUrl, onSave, initialAnnotations, isSa
     }
 
     return () => {
+      window.removeEventListener('resize', setCanvasSize)
       if (imageRef.current) {
         imageRef.current.onload = null
         imageRef.current.onerror = null
       }
     }
-  }, [imageUrl])
+  }, [imageUrl, fullScreen])
 
   // Redraw canvas when lines change
   useEffect(() => {
@@ -241,10 +262,10 @@ export default function PhotoCanvas({ imageUrl, onSave, initialAnnotations, isSa
 
   return (
     <div className={`flex flex-col ${overlayControls ? 'h-full w-full' : 'space-y-2'}`}>
-      <div className={`relative overflow-hidden ${fullScreen ? 'h-[100svh] w-[100vw]' : 'border border-gray-300 rounded-lg'}`}>
+      <div className={`relative ${fullScreen ? 'fixed inset-0 w-screen h-screen overflow-hidden' : 'border border-gray-300 rounded-lg overflow-hidden'}`}>
         <canvas
           ref={canvasRef}
-          className={`touch-none w-full ${fullScreen ? 'h-full' : 'aspect-video'} bg-black`}
+          className={`touch-none ${fullScreen ? 'w-full h-full' : 'w-full aspect-video'} bg-black`}
           onMouseDown={startDrawing}
           onMouseMove={draw}
           onMouseUp={stopDrawing}
