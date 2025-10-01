@@ -1,0 +1,563 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                                                  String            @id @default(uuid()) @db.Uuid
+  name                                                String            @db.VarChar(255)
+  email                                               String            @unique @db.VarChar(255)
+  emailVerified                                       DateTime?         @db.Timestamptz(6)
+  image                                               String?
+  password                                            String?           @db.VarChar(255)
+  role                                                UserRole          @default(USER)
+  createdAt                                           DateTime          @default(now()) @db.Timestamptz(6)
+  updatedAt                                           DateTime          @updatedAt @db.Timestamptz(6)
+  phone                                               String?           @db.VarChar(20)
+  accounts                                            Account[]
+  Activity                                            Activity[]
+  Appointment                                         Appointment[]
+  BulletinMessage                                     BulletinMessage[]
+  DeletionRequest_DeletionRequest_approvedByIdToUser  DeletionRequest[] @relation("DeletionRequest_approvedByIdToUser")
+  DeletionRequest_DeletionRequest_requestedByIdToUser DeletionRequest[] @relation("DeletionRequest_requestedByIdToUser")
+  EmailTemplate                                       EmailTemplate[]
+  Event                                               Event[]
+  Lead                                                Lead[]
+  photos                                              LeadPhoto[]
+  RoutePoint                                          RoutePoint[]
+  sessions                                            Session[]
+  UserTracking                                        UserTracking[]
+  VisionMarker                                        VisionMarker[]
+  Visit                                               Visit[]
+
+  @@map("User")
+}
+
+model Account {
+  id                       String  @id @default(cuid())
+  userId                   String  @db.Uuid
+  type                     String
+  provider                 String
+  providerAccountId        String
+  refresh_token            String?
+  access_token             String?
+  expires_at               Int?
+  token_type               String?
+  scope                    String?
+  id_token                 String?
+  session_state            String?
+  refresh_token_expires_in Int?
+  user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("Account")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String   @db.Uuid
+  expires      DateTime @db.Timestamptz(6)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("Session")
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime @db.Timestamptz(6)
+
+  @@unique([identifier, token])
+  @@map("VerificationToken")
+}
+
+model Lead {
+  id                       String        @id @default(cuid())
+  firstName                String?       @db.VarChar(255)
+  lastName                 String?       @db.VarChar(255)
+  email                    String?       @db.VarChar(255)
+  phone                    String?       @db.VarChar(50)
+  address                  String?       @db.VarChar(510)
+  status                   LeadStatus    @default(follow_ups)
+  assignedToId             String?       @db.Uuid
+  notes                    String?
+  insuranceCompany         String?
+  insurancePolicyNumber    String?
+  insurancePhone           String?
+  insuranceAdjusterName    String?
+  insuranceAdjusterPhone   String?
+  insuranceAdjusterEmail   String?
+  insuranceDeductible      String?
+  insuranceSecondaryPhone  String?
+  dateOfLoss               DateTime?     @db.Timestamptz(6)
+  damageType               DamageType?
+  claimNumber              String?
+  adjusterAppointmentDate  DateTime?     @db.Timestamptz(6)
+  adjusterAppointmentTime  String?
+  adjusterAppointmentNotes String?
+  googleEventId            String?
+  latitude                 Decimal?      @db.Decimal(10, 7)
+  longitude                Decimal?      @db.Decimal(10, 7)
+  createdAt                DateTime      @default(now()) @db.Timestamptz(6)
+  updatedAt                DateTime      @updatedAt @db.Timestamptz(6)
+  googleDriveFolderId      String?
+  googleDriveUrl           String?
+  metadata                 Json?
+  homeownerUpgrades        Decimal?
+  insuranceScopeACV        Decimal?
+  insuranceScopeRCV        Decimal?
+  googleChatSpaceId        String?
+  Activity                 Activity[]
+  Appointment              Appointment[]
+  Contract                 Contract[]
+  File                     File[]
+  User                     User?               @relation(fields: [assignedToId], references: [id])
+  photos                   LeadPhoto[]
+  photoAssignments         PhotoAssignment[]
+  VisionMarker             VisionMarker?
+  Visit                    Visit[]
+  job_costs                job_costs[]
+  payments                 payments[]
+  supplements              supplements[]
+
+  @@index([assignedToId], map: "idx_leads_assigned_to")
+  @@index([latitude, longitude], map: "idx_leads_coordinates")
+  @@index([status], map: "idx_leads_status")
+  @@map("Lead")
+}
+
+model LeadPhoto {
+  id           String   @id @default(uuid())
+  name         String
+  description  String?
+  url          String
+  thumbnailUrl String?
+  mimeType     String?
+  size         Int?
+  leadId       String
+  uploadedById String?  @db.Uuid
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @db.Timestamptz(6)
+  driveFileId  String?
+  lead         Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  uploadedBy   User?    @relation(fields: [uploadedById], references: [id])
+
+  @@index([leadId])
+  @@index([uploadedById])
+  @@map("LeadPhoto")
+}
+
+model Activity {
+  id          String       @id
+  type        ActivityType
+  title       String
+  description String?
+  userId      String       @db.Uuid
+  leadId      String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime
+  imageUrl    String?
+  Lead        Lead?        @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  User        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([createdAt])
+  @@index([leadId])
+  @@index([userId])
+}
+
+model Appointment {
+  id        String             @id
+  title     String
+  startTime DateTime           @db.Timestamptz(6)
+  endTime   DateTime           @db.Timestamptz(6)
+  purpose   AppointmentPurpose
+  status    AppointmentStatus  @default(SCHEDULED)
+  address   String?
+  notes     String?
+  leadId    String
+  userId    String             @db.Uuid
+  createdAt DateTime           @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime           @db.Timestamptz(6)
+  Lead      Lead               @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  User      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+  @@index([startTime])
+  @@index([userId])
+}
+
+model BulletinMessage {
+  id        String   @id @db.Uuid
+  content   String
+  userId    String   @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @db.Timestamptz(6)
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([createdAt])
+  @@index([userId])
+}
+
+model ClientIdSequence {
+  id     Int @id @default(autoincrement())
+  lastId Int @default(50000)
+}
+
+model Contract {
+  id                String    @id @db.Uuid
+  leadId            String
+  contractType      String
+  signatures        Json
+  dates             Json
+  names             Json
+  addresses         Json
+  contactInfo       Json
+  pdfUrl            String?
+  createdAt         DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt         DateTime  @db.Timestamptz(6)
+  signedPdfUrl      String?
+  status            String    @default("pending")
+  fileName          String?
+  googleDriveFileId String?
+  googleDriveLink   String?
+  uploadedAt        DateTime?
+  Lead              Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId])
+}
+
+model DeletionRequest {
+  id                                       String    @id @db.Uuid
+  leadId                                   String
+  leadName                                 String
+  leadEmail                                String
+  leadAddress                              String
+  leadStatus                               String
+  requestedById                            String    @db.Uuid
+  requestedByName                          String
+  requestedByEmail                         String
+  reason                                   String?
+  status                                   String    @default("pending")
+  createdAt                                DateTime  @default(now()) @db.Timestamptz(6)
+  approvedById                             String?   @db.Uuid
+  approvedByName                           String?
+  approvedByEmail                          String?
+  approvedAt                               DateTime? @db.Timestamptz(6)
+  rejectionReason                          String?
+  User_DeletionRequest_approvedByIdToUser  User?     @relation("DeletionRequest_approvedByIdToUser", fields: [approvedById], references: [id])
+  User_DeletionRequest_requestedByIdToUser User      @relation("DeletionRequest_requestedByIdToUser", fields: [requestedById], references: [id])
+
+  @@index([approvedById])
+  @@index([createdAt])
+  @@index([leadId])
+  @@index([requestedById])
+  @@index([status])
+}
+
+model EmailTemplate {
+  id           String   @id @db.Uuid
+  name         String   @db.VarChar(255)
+  description  String?
+  emailSubject String
+  emailBody    String
+  textMessage  String
+  isDefault    Boolean  @default(false)
+  createdById  String   @db.Uuid
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime @db.Timestamptz(6)
+  User         User     @relation(fields: [createdById], references: [id])
+
+  @@index([createdById])
+  @@index([isDefault])
+}
+
+model Event {
+  id          String    @id
+  userId      String    @db.Uuid
+  googleId    String?   @unique
+  summary     String
+  description String?
+  location    String?
+  startTime   DateTime?
+  endTime     DateTime?
+  isAllDay    Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime
+  User        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model File {
+  id              String   @id
+  url             String
+  name            String
+  size            Int
+  type            String
+  category        String?
+  leadId          String
+  createdAt       DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime @db.Timestamptz(6)
+  blobUrl         String?
+  driveFileId     String?
+  storageLocation String   @default("drive")
+  Lead            Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([category])
+  @@index([leadId])
+  @@index([storageLocation])
+}
+
+model RoutePoint {
+  id        String   @id
+  userId    String   @db.Uuid
+  timestamp DateTime @default(now())
+  lat       Float
+  lng       Float
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([timestamp])
+  @@index([userId])
+}
+
+model UserTracking {
+  id        String   @id
+  userId    String   @db.Uuid
+  sessionId String
+  eventType String
+  page      String
+  timestamp DateTime @db.Timestamptz(6)
+  data      Json
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([eventType])
+  @@index([page])
+  @@index([sessionId])
+  @@index([timestamp])
+  @@index([userId])
+}
+
+model VisionMarker {
+  id          String      @id @db.Uuid
+  latitude    Float
+  longitude   Float
+  address     String
+  notes       String?
+  status      KnockStatus @default(KNOCKED)
+  contactInfo Json?
+  visits      Json?
+  followUp    Json?
+  userId      String?     @db.Uuid
+  leadId      String?     @unique
+  createdAt   DateTime    @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime    @db.Timestamptz(6)
+  Lead        Lead?       @relation(fields: [leadId], references: [id])
+  User        User?       @relation(fields: [userId], references: [id])
+
+  @@index([leadId])
+  @@index([userId])
+  @@index([latitude], map: "idx_vision_markers_lat")
+  @@index([longitude], map: "idx_vision_markers_lng")
+  @@index([status], map: "idx_vision_markers_status")
+}
+
+model Visit {
+  id            String      @id @db.Uuid
+  address       String
+  latitude      Float
+  longitude     Float
+  status        KnockStatus
+  notes         String?
+  followUpDate  DateTime?   @db.Timestamptz(6)
+  followUpTime  String?
+  followUpNotes String?
+  leadId        String?
+  userId        String?     @db.Uuid
+  createdAt     DateTime?   @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime?   @db.Timestamptz(6)
+  Lead          Lead?       @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  User          User?       @relation(fields: [userId], references: [id])
+
+  @@index([leadId])
+  @@index([status])
+  @@index([userId])
+}
+
+model job_costs {
+  id        String        @id
+  createdAt DateTime      @default(now())
+  updatedAt DateTime
+  leadId    String
+  type      JobCostType
+  amount    Decimal
+  payee     String?
+  poNumber  String?
+  status    JobCostStatus
+  Lead      Lead          @relation(fields: [leadId], references: [id], onDelete: Cascade)
+}
+
+model payments {
+  id           String        @id
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime
+  leadId       String
+  type         PaymentType
+  amount       Decimal
+  status       PaymentStatus
+  dateReceived DateTime?
+  Lead         Lead          @relation(fields: [leadId], references: [id], onDelete: Cascade)
+}
+
+model supplements {
+  id          String           @id
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime
+  leadId      String
+  amount      Decimal
+  description String?
+  status      SupplementStatus @default(PENDING)
+  Lead        Lead             @relation(fields: [leadId], references: [id], onDelete: Cascade)
+}
+
+enum UserRole {
+  ADMIN
+  MANAGER
+  USER
+  CONTRACTOR
+}
+
+enum LeadStatus {
+  signed_contract
+  scheduled
+  colors
+  acv
+  job
+  completed_jobs
+  zero_balance
+  denied
+  follow_ups
+}
+
+enum ActivityType {
+  LEAD_CREATED
+  LEAD_UPDATED
+  NOTE_ADDED
+  MEETING_SCHEDULED
+  DOCUMENT_UPLOADED
+  ESTIMATE_CREATED
+  CONTRACT_CREATED
+  STATUS_CHANGED
+  APPOINTMENT_CREATED
+  APPOINTMENT_UPDATED
+}
+
+enum AppointmentPurpose {
+  INSPECTION
+  FILE_CLAIM
+  FOLLOW_UP
+  ADJUSTER
+  BUILD_DAY
+  OTHER
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+  RESCHEDULED
+  NO_SHOW
+}
+
+enum DamageType {
+  HAIL
+  WIND
+  FIRE
+  WIND_AND_HAIL
+}
+
+enum JobCostStatus {
+  ORDERED
+  PAID
+  INVOICED
+  ACCRUED
+  PLANNED
+}
+
+enum JobCostType {
+  MATERIAL
+  LABOR
+  PERMIT
+  DUMPSTER
+  SALES_COMMISSION
+}
+
+enum KnockStatus {
+  KNOCKED
+  NO_ANSWER
+  NOT_INTERESTED
+  FOLLOW_UP
+  INSPECTED
+  IN_CONTRACT
+}
+
+enum PaymentStatus {
+  INVOICED
+  RECEIVED
+  DEPOSITED
+}
+
+enum PaymentType {
+  DEDUCTIBLE
+  ACV
+  SUPPLEMENT
+  DEPRECIATION
+  UPGRADE
+}
+
+enum SupplementStatus {
+  PENDING
+  APPROVED
+  DENIED
+}
+
+// ============================================
+// CAMERA APP TABLES
+// ============================================
+
+// Photo job assignments for contractors
+model PhotoAssignment {
+  id              String    @id @default(cuid())
+  leadId          String
+  contractorPhone String
+  assignedAt      DateTime  @default(now()) @db.Timestamptz(6)
+  assignedBy      String
+  notes           String?   @db.Text
+  completedAt     DateTime? @db.Timestamptz(6)
+  
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  
+  @@index([contractorPhone])
+  @@index([leadId])
+}
+
+// Optional: Photo upload audit log
+model PhotoUploadLog {
+  id              String   @id @default(cuid())
+  leadId          String
+  contractorPhone String
+  photoId         String   @db.Uuid
+  uploadedAt      DateTime @default(now()) @db.Timestamptz(6)
+  ipAddress       String?
+  userAgent       String?  @db.Text
+  
+  @@index([leadId])
+  @@index([contractorPhone])
+}
