@@ -14,6 +14,8 @@ import { toast } from "sonner"
 import { FileUpload } from "@/components/ui/file-upload"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
+import { useLanguage } from "@/contexts/language-context"
+import { LanguageSelector } from "@/components/language-selector"
 
 interface Lead {
   id: string
@@ -40,6 +42,7 @@ export default function JobDetailPage() {
   const router = useRouter()
   const params = useParams()
   const leadId = params.leadId as string
+  const { t } = useLanguage()
 
   const [lead, setLead] = useState<Lead | null>(null)
   const [loading, setLoading] = useState(true)
@@ -89,7 +92,7 @@ export default function JobDetailPage() {
   }
 
   const handleDeletePhoto = async (photoId: string) => {
-    if (!confirm("Are you sure you want to delete this photo?")) return
+    if (!confirm(t.jobs.deleteConfirm)) return
 
     try {
       setDeletingPhotoId(photoId)
@@ -103,13 +106,13 @@ export default function JobDetailPage() {
             photos: lead.photos.filter((p) => p.id !== photoId),
           })
         }
-        toast.success("Photo deleted")
+        toast.success(t.jobs.photoDeleted)
       } else {
-        toast.error(result.error || "Failed to delete photo")
+        toast.error(result.error || t.jobs.deleteFailed)
       }
     } catch (err) {
       console.error("Error deleting photo:", err)
-      toast.error("Failed to delete photo")
+      toast.error(t.jobs.deleteFailed)
     } finally {
       setDeletingPhotoId(null)
     }
@@ -177,13 +180,13 @@ export default function JobDetailPage() {
         })
       }
 
-      toast.success(`${uploadedCount} photo(s) uploaded successfully`)
+      toast.success(`${uploadedCount} ${t.upload.uploadSuccess}`)
       setUploadDialogOpen(false)
       setSelectedFiles([])
       setUploadDescription("")
     } catch (error) {
       console.error("Error uploading photos:", error)
-      toast.error("Failed to upload photos")
+      toast.error(t.upload.uploadFailed)
     } finally {
       setIsUploading(false)
     }
@@ -194,7 +197,7 @@ export default function JobDetailPage() {
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto text-[#a4c639]" />
-          <p className="mt-2 text-sm text-muted-foreground">Loading job...</p>
+          <p className="mt-2 text-sm text-muted-foreground">{t.common.loading}</p>
         </div>
       </div>
     )
@@ -210,7 +213,7 @@ export default function JobDetailPage() {
             className="mb-4"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Jobs
+            {t.jobs.backToJobs}
           </Button>
           <Card>
             <CardContent className="text-center py-12">
@@ -231,14 +234,16 @@ export default function JobDetailPage() {
       {/* Header */}
       <header className="bg-white border-b sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 py-4">
-          <Button
-            variant="ghost"
-            onClick={() => router.push("/")}
-            className="mb-2"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Jobs
-          </Button>
+          <div className="flex items-start justify-between mb-2">
+            <Button
+              variant="ghost"
+              onClick={() => router.push("/")}
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              {t.jobs.backToJobs}
+            </Button>
+            <LanguageSelector />
+          </div>
           <h1 className="text-2xl font-bold">{leadName}</h1>
           {lead.address && (
             <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
@@ -254,23 +259,23 @@ export default function JobDetailPage() {
         {/* Lead Details Card */}
         <Card>
           <CardHeader>
-            <CardTitle>Job Details</CardTitle>
+            <CardTitle>{t.jobs.jobDetails}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             {lead.claimNumber && (
               <div className="flex items-start justify-between">
-                <span className="text-sm text-muted-foreground">Claim Number:</span>
+                <span className="text-sm text-muted-foreground">{t.jobs.claimNumber}:</span>
                 <span className="text-sm font-medium">{lead.claimNumber}</span>
               </div>
             )}
             {lead.status && (
               <div className="flex items-start justify-between">
-                <span className="text-sm text-muted-foreground">Status:</span>
+                <span className="text-sm text-muted-foreground">{t.jobs.status}:</span>
                 <Badge variant="secondary">{lead.status.replace(/_/g, " ")}</Badge>
               </div>
             )}
             <div className="flex items-start justify-between">
-              <span className="text-sm text-muted-foreground">Photos Taken:</span>
+              <span className="text-sm text-muted-foreground">{t.jobs.photosTaken}:</span>
               <span className="text-sm font-medium">{lead.photos.length}</span>
             </div>
           </CardContent>
@@ -284,7 +289,7 @@ export default function JobDetailPage() {
             size="lg"
           >
             <Camera className="h-5 w-5 mr-2" />
-            Take Photo
+            {t.jobs.takePhoto}
           </Button>
           <Button
             onClick={() => setUploadDialogOpen(true)}
@@ -293,7 +298,7 @@ export default function JobDetailPage() {
             size="lg"
           >
             <Upload className="h-5 w-5 mr-2" />
-            Upload Photos
+            {t.jobs.uploadPhotos}
           </Button>
         </div>
 
@@ -304,7 +309,7 @@ export default function JobDetailPage() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold flex items-center gap-2">
               <ImageIcon className="h-5 w-5" />
-              Photos ({lead.photos.length})
+              {t.jobs.photos} ({lead.photos.length})
             </h2>
           </div>
 
@@ -312,9 +317,9 @@ export default function JobDetailPage() {
             <Card>
               <CardContent className="text-center py-12">
                 <Camera className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <CardTitle className="text-lg mb-2">No Photos Yet</CardTitle>
+                <CardTitle className="text-lg mb-2">{t.jobs.noPhotosTitle}</CardTitle>
                 <CardDescription>
-                  Tap &quot;Take Photo&quot; above to capture your first photo
+                  {t.jobs.noPhotosMessage}
                 </CardDescription>
               </CardContent>
             </Card>
@@ -419,7 +424,7 @@ export default function JobDetailPage() {
       <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Upload Photos</DialogTitle>
+            <DialogTitle>{t.upload.uploadPhotos}</DialogTitle>
           </DialogHeader>
           
           <div className="space-y-6">
@@ -430,18 +435,18 @@ export default function JobDetailPage() {
                 <div className="space-y-4">
                   <div>
                     <label className="text-sm font-medium mb-2 block">
-                      Description (optional, applies to all photos)
+                      {t.upload.descriptionLabel}
                     </label>
                     <Input
                       value={uploadDescription}
                       onChange={(e) => setUploadDescription(e.target.value)}
-                      placeholder="Add description for all photos..."
+                      placeholder={t.upload.descriptionPlaceholder}
                       className="w-full"
                     />
                   </div>
 
                   <div className="text-sm text-muted-foreground">
-                    {selectedFiles.length} file{selectedFiles.length > 1 ? 's' : ''} selected
+                    {selectedFiles.length} {t.upload.filesSelected}
                   </div>
                 </div>
 
@@ -454,7 +459,7 @@ export default function JobDetailPage() {
                       setUploadDescription("")
                     }}
                   >
-                    Cancel
+                    {t.common.cancel}
                   </Button>
                   <Button
                     onClick={handleUploadPhotos}
@@ -464,10 +469,10 @@ export default function JobDetailPage() {
                     {isUploading ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Uploading...
+                        {t.upload.uploading}
                       </>
                     ) : (
-                      `Upload ${selectedFiles.length} Photo${selectedFiles.length > 1 ? 's' : ''}`
+                      `${t.upload.uploadButton} ${selectedFiles.length} ${t.jobs.photos}`
                     )}
                   </Button>
                 </div>

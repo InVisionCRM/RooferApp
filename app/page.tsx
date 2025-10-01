@@ -8,10 +8,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Camera, LogOut, MapPin, Loader2, Image as ImageIcon } from "lucide-react"
 import type { PhotoJob } from "@/types/lead"
+import { useLanguage } from "@/contexts/language-context"
+import { LanguageSelector } from "@/components/language-selector"
 
 export default function HomePage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const { t } = useLanguage()
   const [jobs, setJobs] = useState<PhotoJob[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
@@ -55,7 +58,7 @@ export default function HomePage() {
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto text-[#a4c639]" />
-          <p className="mt-2 text-sm text-muted-foreground">Loading...</p>
+          <p className="mt-2 text-sm text-muted-foreground">{t.common.loading}</p>
         </div>
       </div>
     )
@@ -71,21 +74,24 @@ export default function HomePage() {
               <Camera className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-bold">Photo Jobs</h1>
+              <h1 className="text-lg font-bold">{t.jobs.title}</h1>
               <p className="text-xs text-muted-foreground">
                 {session?.user?.phone || "Contractor"}
               </p>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleLogout}
-            className="text-muted-foreground"
-          >
-            <LogOut className="h-4 w-4 mr-2" />
-            Sign Out
-          </Button>
+          <div className="flex items-center gap-2">
+            <LanguageSelector />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleLogout}
+              className="text-muted-foreground"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              {t.common.signOut}
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -101,11 +107,11 @@ export default function HomePage() {
           <Card className="text-center py-12">
             <CardContent>
               <Camera className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <CardTitle className="mb-2">No Photo Jobs Yet</CardTitle>
+              <CardTitle className="mb-2">{t.jobs.noJobsTitle}</CardTitle>
               <CardDescription>
-                You don&apos;t have any assigned photo jobs at the moment.
+                {t.jobs.noJobsMessage}
                 <br />
-                Contact your supervisor if you believe this is an error.
+                {t.jobs.contactSupervisor}
               </CardDescription>
             </CardContent>
           </Card>
@@ -113,7 +119,7 @@ export default function HomePage() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold">
-                Your Assigned Jobs ({jobs.length})
+                {t.jobs.yourAssignedJobs} ({jobs.length})
               </h2>
               <Button
                 variant="outline"
@@ -121,7 +127,7 @@ export default function HomePage() {
                 onClick={fetchJobs}
                 disabled={loading}
               >
-                Refresh
+                {t.common.refresh}
               </Button>
             </div>
 
@@ -172,23 +178,23 @@ export default function HomePage() {
                   <div className="space-y-2">
                     {job.leadClaimNumber && (
                       <div className="text-sm">
-                        <span className="text-muted-foreground">Claim #:</span>{" "}
+                        <span className="text-muted-foreground">{t.jobs.claimNumber}:</span>{" "}
                         <span className="font-medium">{job.leadClaimNumber}</span>
                       </div>
                     )}
                     {job.notes && (
                       <div className="text-sm">
-                        <span className="text-muted-foreground">Instructions:</span>{" "}
+                        <span className="text-muted-foreground">{t.jobs.instructions}:</span>{" "}
                         <span>{job.notes}</span>
                       </div>
                     )}
                     <div className="text-xs text-muted-foreground">
-                      Assigned {new Date(job.assignedAt).toLocaleDateString()}
+                      {t.jobs.assigned} {new Date(job.assignedAt).toLocaleDateString()}
                     </div>
                   </div>
                   <Button className="w-full mt-4 bg-[#a4c639] hover:bg-[#8aaa2a]">
                     <Camera className="h-4 w-4 mr-2" />
-                    Open Job
+                    {t.jobs.openJob}
                   </Button>
                 </CardContent>
               </Card>
