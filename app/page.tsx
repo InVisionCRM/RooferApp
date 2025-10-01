@@ -118,7 +118,10 @@ export default function HomePage() {
               <CardDescription>
                 {t.jobs.noJobsMessage}
                 <br />
-                {t.jobs.contactSupervisor}
+                {t.jobs.contactSupervisor}{" "}
+                <a href="tel:+17345894474" className="text-[#a4c639] hover:underline font-medium">
+                  (734) 589-4474
+                </a>
               </CardDescription>
             </CardContent>
           </Card>

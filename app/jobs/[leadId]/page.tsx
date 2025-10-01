@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { Camera, ArrowLeft, Loader2, MapPin, FileText, Image as ImageIcon, Trash2, Upload } from "lucide-react"
+import { Camera, ArrowLeft, Loader2, MapPin, FileText, Image as ImageIcon, Trash2, Upload, Phone } from "lucide-react"
 import TakePhotoModal from "@/components/take-photo-modal"
 import { deletePhoto, uploadSinglePhoto } from "@/actions/photo-actions"
 import { toast } from "sonner"
@@ -277,6 +277,18 @@ export default function JobDetailPage() {
             <div className="flex items-start justify-between">
               <span className="text-sm text-muted-foreground">{t.jobs.photosTaken}:</span>
               <span className="text-sm font-medium">{lead.photos.length}</span>
+            </div>
+            <Separator />
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">{t.jobs.jobContact}</span>
+              <Button
+                size="sm"
+                onClick={() => window.location.href = 'tel:+17345894474'}
+                className="bg-[#a4c639] hover:bg-[#8aaa2a] text-white"
+              >
+                <Phone className="h-4 w-4 mr-2" />
+                {t.jobs.callButton}
+              </Button>
             </div>
           </CardContent>
         </Card>
