@@ -322,6 +322,9 @@ GET /api/photo-assignments?contractorPhone=555-1234
 - Response: { assignments: PhotoAssignment[] }
 ```
 
+
+
+
 ### Photo Management (Identical to CRM)
 ```
 POST /api/photos/upload

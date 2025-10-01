@@ -477,7 +477,7 @@ export default function TakePhotoModal({ open, onOpenChange, leadId, onPhotoSave
           </div>
 
           {/* Photo/Video Toggle - Below Shutter */}
-          <div className="fixed bottom-[50px] left-0 right-0 z-[60] flex items-center justify-center gap-2">
+          <div className="fixed bottom-[60px] left-0 right-0 z-[60] flex items-center justify-center gap-2">
             <Button
               variant={!isVideoMode ? "default" : "outline"}
               size="sm"
