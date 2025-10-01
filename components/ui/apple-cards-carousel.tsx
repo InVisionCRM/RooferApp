@@ -132,20 +132,20 @@ export const Carousel = ({ items, initialScroll = 0 }: CarouselProps) => {
             ))}
           </div>
         </div>
-        <div className="mr-10 flex justify-end gap-2">
+        <div className="flex justify-center gap-3 mt-4 px-4">
           <button
-            className="relative z-40 flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 disabled:opacity-50"
+            className="relative z-40 flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-lg disabled:opacity-50 border-2 border-gray-200"
             onClick={scrollLeft}
             disabled={!canScrollLeft}
           >
-            <IconArrowNarrowLeft className="h-6 w-6 text-gray-500" />
+            <IconArrowNarrowLeft className="h-6 w-6 text-gray-700" />
           </button>
           <button
-            className="relative z-40 flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 disabled:opacity-50"
+            className="relative z-40 flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-lg disabled:opacity-50 border-2 border-gray-200"
             onClick={scrollRight}
             disabled={!canScrollRight}
           >
-            <IconArrowNarrowRight className="h-6 w-6 text-gray-500" />
+            <IconArrowNarrowRight className="h-6 w-6 text-gray-700" />
           </button>
         </div>
       </div>
@@ -211,10 +211,10 @@ export const Card = ({
               exit={{ opacity: 0 }}
               ref={containerRef}
               layoutId={layout ? `card-${card.title}` : undefined}
-              className="relative z-[60] mx-auto my-10 h-fit max-w-5xl rounded-3xl bg-white p-4 font-sans md:p-10 dark:bg-neutral-900"
+              className="relative z-[60] mx-auto my-10 h-fit max-w-3xl rounded-3xl bg-white p-4 font-sans md:p-10 dark:bg-neutral-900"
             >
               <button
-                className="sticky top-[66px] right-0 ml-auto flex h-8 w-8 items-center justify-center rounded-full bg-black dark:bg-white"
+                className="sticky top-2 right-0 ml-auto flex h-10 w-10 items-center justify-center rounded-full bg-black dark:bg-white z-[70] shadow-lg"
                 onClick={handleClose}
               >
                 <IconX className="h-6 w-6 text-neutral-100 dark:text-neutral-900" />
@@ -239,7 +239,7 @@ export const Card = ({
       <motion.button
         layoutId={layout ? `card-${card.title}` : undefined}
         onClick={handleOpen}
-        className="relative z-10 flex h-[500px] w-[300px] flex-col items-start justify-start overflow-hidden rounded-3xl bg-gray-100 md:h-[600px] md:w-[450px] dark:bg-neutral-900"
+        className="relative z-10 flex h-[320px] w-[240px] flex-col items-start justify-start overflow-hidden rounded-2xl bg-gray-100 md:h-[400px] md:w-[300px] dark:bg-neutral-900"
       >
         <BlurImage
           src={card.src}

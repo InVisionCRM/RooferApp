@@ -1,6 +1,6 @@
 {
-  "name": "Roofer Camera App",
-  "short_name": "RoofCam",
+  "name": "RoofRecord",
+  "short_name": "RoofRecord",
   "description": "Photo capture app for roofing contractors",
   "start_url": "/",
   "display": "standalone",
@@ -8,6 +8,12 @@
   "theme_color": "#a4c639",
   "orientation": "portrait",
   "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
     {
       "src": "/favicon.ico",
       "sizes": "any",

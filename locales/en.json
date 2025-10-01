@@ -12,7 +12,7 @@
     "error": "Error"
   },
   "login": {
-    "title": "Roofer Camera App",
+    "title": "RoofRecord",
     "subtitle": "Enter your phone number to access your assigned photo jobs",
     "phoneLabel": "Phone Number",
     "phonePlaceholder": "5551234567",

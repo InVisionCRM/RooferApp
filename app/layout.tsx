@@ -8,13 +8,17 @@ import { LanguageProvider } from "@/contexts/language-context"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Roofer Camera App",
+  title: "RoofRecord",
   description: "Photo capture app for roofing contractors",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Roofer Camera",
+    title: "RoofRecord",
   },
 }
 

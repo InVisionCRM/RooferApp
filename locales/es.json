@@ -12,7 +12,7 @@
     "error": "Error"
   },
   "login": {
-    "title": "Aplicación de Cámara para Techadores",
+    "title": "RoofRecord",
     "subtitle": "Ingrese su número de teléfono para acceder a sus trabajos de fotos asignados",
     "phoneLabel": "Número de Teléfono",
     "phonePlaceholder": "5551234567",
