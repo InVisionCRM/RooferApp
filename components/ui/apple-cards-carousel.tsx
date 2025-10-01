@@ -9,7 +9,7 @@ import React, {
 import {
   IconArrowNarrowLeft,
   IconArrowNarrowRight,
-  IconX,
+  IconArrowLeft,
 } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "motion/react";
@@ -214,10 +214,11 @@ export const Card = ({
               className="relative z-[60] mx-auto my-10 h-fit max-w-3xl rounded-3xl bg-white p-4 font-sans md:p-10 dark:bg-neutral-900"
             >
               <button
-                className="sticky top-2 right-0 ml-auto flex h-10 w-10 items-center justify-center rounded-full bg-black dark:bg-white z-[70] shadow-lg"
+                className="absolute top-[66px] left-4 z-[70] flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg shadow-lg font-semibold"
                 onClick={handleClose}
               >
-                <IconX className="h-6 w-6 text-neutral-100 dark:text-neutral-900" />
+                <IconArrowLeft className="h-5 w-5 text-white" />
+                Back
               </button>
               <motion.p
                 layoutId={layout ? `category-${card.title}` : undefined}

@@ -10,6 +10,7 @@ import { Camera, LogOut, MapPin, Loader2, Image as ImageIcon } from "lucide-reac
 import type { PhotoJob } from "@/types/lead"
 import { useLanguage } from "@/contexts/language-context"
 import { LanguageSelector } from "@/components/language-selector"
+import Image from "next/image"
 
 export default function HomePage() {
   const { data: session, status } = useSession()
@@ -70,8 +71,14 @@ export default function HomePage() {
       <header className="bg-white border-b sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="bg-[#a4c639] p-2 rounded-lg">
-              <Camera className="h-5 w-5 text-white" />
+            <div className="relative w-10 h-10">
+              <Image
+                src="/logo.png"
+                alt="RoofRecord"
+                width={40}
+                height={40}
+                className="w-full h-full object-contain"
+              />
             </div>
             <div>
               <h1 className="text-lg font-bold">{t.jobs.title}</h1>

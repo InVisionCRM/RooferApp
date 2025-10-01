@@ -7,9 +7,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Camera, Loader2 } from "lucide-react"
+import { Loader2 } from "lucide-react"
 import { useLanguage } from "@/contexts/language-context"
 import { LanguageSelector } from "@/components/language-selector"
+import Image from "next/image"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -67,8 +68,14 @@ export default function LoginPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-4">
-            <div className="bg-[#a4c639] p-4 rounded-full">
-              <Camera className="h-8 w-8 text-white" />
+            <div className="relative w-24 h-24">
+              <Image
+                src="/logo.png"
+                alt="RoofRecord Logo"
+                width={96}
+                height={96}
+                className="w-full h-full object-contain"
+              />
             </div>
           </div>
           <CardTitle className="text-2xl font-bold">{t.login.title}</CardTitle>
