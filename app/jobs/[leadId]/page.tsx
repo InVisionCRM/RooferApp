@@ -7,10 +7,13 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { Camera, ArrowLeft, Loader2, MapPin, FileText, Image as ImageIcon, Trash2 } from "lucide-react"
+import { Camera, ArrowLeft, Loader2, MapPin, FileText, Image as ImageIcon, Trash2, Upload } from "lucide-react"
 import TakePhotoModal from "@/components/take-photo-modal"
-import { deletePhoto } from "@/actions/photo-actions"
+import { deletePhoto, uploadSinglePhoto } from "@/actions/photo-actions"
 import { toast } from "sonner"
+import { FileUpload } from "@/components/ui/file-upload"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
 
 interface Lead {
   id: string
@@ -43,6 +46,10 @@ export default function JobDetailPage() {
   const [error, setError] = useState("")
   const [cameraOpen, setCameraOpen] = useState(false)
   const [deletingPhotoId, setDeletingPhotoId] = useState<string | null>(null)
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false)
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
+  const [uploadDescription, setUploadDescription] = useState("")
+  const [isUploading, setIsUploading] = useState(false)
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -105,6 +112,80 @@ export default function JobDetailPage() {
       toast.error("Failed to delete photo")
     } finally {
       setDeletingPhotoId(null)
+    }
+  }
+
+  const handleFilesSelected = (files: File[]) => {
+    setSelectedFiles(files)
+  }
+
+  const handleUploadPhotos = async () => {
+    if (selectedFiles.length === 0) return
+
+    try {
+      setIsUploading(true)
+      let uploadedCount = 0
+      const uploadedPhotos: Photo[] = []
+
+      for (const file of selectedFiles) {
+        try {
+          // Convert file to base64
+          const reader = new FileReader()
+          const base64Promise = new Promise<string>((resolve, reject) => {
+            reader.onload = () => resolve(reader.result as string)
+            reader.onerror = reject
+            reader.readAsDataURL(file)
+          })
+
+          const base64Data = await base64Promise
+          const lastName = (lead?.lastName || "photo").toString().trim().replace(/\s+/g, "_")
+          const counter = Math.floor(Date.now() / 1000) % 100000 + uploadedCount
+
+          const serialized = {
+            name: `${lastName}-upload-${counter}.${file.name.split('.').pop()}`,
+            type: file.type,
+            size: file.size,
+            base64Data: base64Data.split(',')[1] || base64Data,
+          }
+
+          const result = await uploadSinglePhoto(leadId, serialized, uploadDescription)
+
+          if (result.success && result.photo) {
+            uploadedCount++
+            const saved: Photo = {
+              id: result.photo.id,
+              url: result.photo.url,
+              thumbnailUrl: result.photo.thumbnailUrl || result.photo.url,
+              name: result.photo.name,
+              description: result.photo.description,
+              mimeType: result.photo.mimeType,
+              createdAt: result.photo.createdAt.toISOString(),
+            }
+            
+            uploadedPhotos.push(saved)
+          }
+        } catch (error) {
+          console.error(`Error uploading file ${file.name}:`, error)
+        }
+      }
+
+      // Update state once with all uploaded photos
+      if (lead && uploadedPhotos.length > 0) {
+        setLead({
+          ...lead,
+          photos: [...uploadedPhotos, ...lead.photos],
+        })
+      }
+
+      toast.success(`${uploadedCount} photo(s) uploaded successfully`)
+      setUploadDialogOpen(false)
+      setSelectedFiles([])
+      setUploadDescription("")
+    } catch (error) {
+      console.error("Error uploading photos:", error)
+      toast.error("Failed to upload photos")
+    } finally {
+      setIsUploading(false)
     }
   }
 
@@ -195,15 +276,26 @@ export default function JobDetailPage() {
           </CardContent>
         </Card>
 
-        {/* Camera Button */}
-        <Button
-          onClick={() => setCameraOpen(true)}
-          className="w-full bg-[#a4c639] hover:bg-[#8aaa2a] h-14"
-          size="lg"
-        >
-          <Camera className="h-5 w-5 mr-2" />
-          Take Photo
-        </Button>
+        {/* Action Buttons */}
+        <div className="grid grid-cols-2 gap-4">
+          <Button
+            onClick={() => setCameraOpen(true)}
+            className="bg-[#a4c639] hover:bg-[#8aaa2a] h-14"
+            size="lg"
+          >
+            <Camera className="h-5 w-5 mr-2" />
+            Take Photo
+          </Button>
+          <Button
+            onClick={() => setUploadDialogOpen(true)}
+            variant="outline"
+            className="h-14"
+            size="lg"
+          >
+            <Upload className="h-5 w-5 mr-2" />
+            Upload Photos
+          </Button>
+        </div>
 
         <Separator />
 
@@ -322,6 +414,68 @@ export default function JobDetailPage() {
         leadId={leadId}
         onPhotoSaved={handlePhotoSaved}
       />
+
+      {/* Upload Photos Dialog */}
+      <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Upload Photos</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-6">
+            <FileUpload onChange={handleFilesSelected} />
+            
+            {selectedFiles.length > 0 && (
+              <>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">
+                      Description (optional, applies to all photos)
+                    </label>
+                    <Input
+                      value={uploadDescription}
+                      onChange={(e) => setUploadDescription(e.target.value)}
+                      placeholder="Add description for all photos..."
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div className="text-sm text-muted-foreground">
+                    {selectedFiles.length} file{selectedFiles.length > 1 ? 's' : ''} selected
+                  </div>
+                </div>
+
+                <div className="flex gap-3 justify-end">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setUploadDialogOpen(false)
+                      setSelectedFiles([])
+                      setUploadDescription("")
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleUploadPhotos}
+                    disabled={isUploading}
+                    className="bg-[#a4c639] hover:bg-[#8aaa2a] text-black"
+                  >
+                    {isUploading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Uploading...
+                      </>
+                    ) : (
+                      `Upload ${selectedFiles.length} Photo${selectedFiles.length > 1 ? 's' : ''}`
+                    )}
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

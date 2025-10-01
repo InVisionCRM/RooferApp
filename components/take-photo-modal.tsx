@@ -66,15 +66,52 @@ export default function TakePhotoModal({ open, onOpenChange, leadId, onPhotoSave
     const start = async () => {
       try {
         if (!open) return
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-        if (cancelled) return
+        
+        console.log('Attempting to access camera...')
+        
+        // Try with facingMode first, fallback to basic video if that fails
+        let stream: MediaStream | null = null
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { 
+              facingMode: "environment",
+              width: { ideal: 1920 },
+              height: { ideal: 1080 }
+            },
+            audio: false
+          })
+        } catch (err) {
+          console.warn('Failed with facingMode, trying basic video:', err)
+          // Fallback to basic video request for Chrome mobile compatibility
+          stream = await navigator.mediaDevices.getUserMedia({ 
+            video: true,
+            audio: false
+          })
+        }
+        
+        if (cancelled || !stream) return
+        
+        console.log('Camera stream obtained successfully')
         streamRef.current = stream
+        
         if (videoRef.current) {
           videoRef.current.srcObject = stream
-          await videoRef.current.play().catch(() => {})
+          
+          // Important for Chrome mobile: ensure video is ready before playing
+          videoRef.current.onloadedmetadata = () => {
+            if (videoRef.current && !cancelled) {
+              videoRef.current.play().catch((playError) => {
+                console.error('Error playing video:', playError)
+              })
+            }
+          }
         }
-      } catch {
-        // silently ignore
+      } catch (error) {
+        console.error('Camera access error:', error)
+        // Show user-friendly error
+        if (error instanceof Error) {
+          alert(`Camera access failed: ${error.message}. Please ensure you've granted camera permissions.`)
+        }
       }
     }
     if (open) {
@@ -378,10 +415,17 @@ export default function TakePhotoModal({ open, onOpenChange, leadId, onPhotoSave
           <DialogTitle>Take Photo</DialogTitle>
         </DialogHeader>
         <div className="relative w-full h-full bg-black">
-          <video ref={videoRef} className="w-full h-full object-cover bg-black" playsInline autoPlay muted />
+          <video 
+            ref={videoRef} 
+            className="w-full h-full object-cover bg-black" 
+            playsInline 
+            autoPlay 
+            muted
+            webkit-playsinline="true"
+          />
           
           {/* Close Button */}
-          <div className="absolute top-[46px] left-4 z-[60]">
+          <div className="absolute top-[61px] left-4 z-[60]">
             <Button
               variant="outline"
               size="sm"
@@ -389,28 +433,6 @@ export default function TakePhotoModal({ open, onOpenChange, leadId, onPhotoSave
               className="bg-white/90 hover:bg-white"
             >
               Close
-            </Button>
-          </div>
-
-          {/* Photo/Video Toggle */}
-          <div className="absolute top-[46px] right-4 z-[60] flex gap-2">
-            <Button
-              variant={!isVideoMode ? "default" : "outline"}
-              size="sm"
-              onClick={() => setIsVideoMode(false)}
-              className={!isVideoMode ? "bg-[#a4c639] hover:bg-[#8aaa2a]" : "bg-white/90"}
-            >
-              <Camera className="h-4 w-4 mr-1" />
-              Photo
-            </Button>
-            <Button
-              variant={isVideoMode ? "default" : "outline"}
-              size="sm"
-              onClick={() => setIsVideoMode(true)}
-              className={isVideoMode ? "bg-[#a4c639] hover:bg-[#8aaa2a]" : "bg-white/90"}
-            >
-              <Video className="h-4 w-4 mr-1" />
-              Video
             </Button>
           </div>
 
@@ -452,6 +474,28 @@ export default function TakePhotoModal({ open, onOpenChange, leadId, onPhotoSave
                 )}
               </Button>
             )}
+          </div>
+
+          {/* Photo/Video Toggle - Below Shutter */}
+          <div className="fixed bottom-[50px] left-0 right-0 z-[60] flex items-center justify-center gap-2">
+            <Button
+              variant={!isVideoMode ? "default" : "outline"}
+              size="sm"
+              onClick={() => setIsVideoMode(false)}
+              className={!isVideoMode ? "bg-[#a4c639] hover:bg-[#8aaa2a]" : "bg-white/90"}
+            >
+              <Camera className="h-4 w-4 mr-1" />
+              Photo
+            </Button>
+            <Button
+              variant={isVideoMode ? "default" : "outline"}
+              size="sm"
+              onClick={() => setIsVideoMode(true)}
+              className={isVideoMode ? "bg-[#a4c639] hover:bg-[#8aaa2a]" : "bg-white/90"}
+            >
+              <Video className="h-4 w-4 mr-1" />
+              Video
+            </Button>
           </div>
 
           {/* Tips Overlay */}
