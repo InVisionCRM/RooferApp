@@ -37,16 +37,10 @@ export default function PhotoCanvas({ imageUrl, onSave, initialAnnotations, isSa
 
     // Set canvas size based on viewport for fullscreen, or container for normal
     const setCanvasSize = () => {
-      if (fullScreen) {
-        // For fullscreen, set logical size to match viewport
-        canvas.width = window.innerWidth
-        canvas.height = window.innerHeight
-        canvas.style.width = '100%'
-        canvas.style.height = '100%'
-      } else {
-        canvas.width = canvas.clientWidth
-        canvas.height = canvas.clientHeight
-      }
+      // Always use the actual rendered size of the canvas element
+      const rect = canvas.getBoundingClientRect()
+      canvas.width = rect.width
+      canvas.height = rect.height
       
       // Redraw after resize
       if (imageLoaded && imageRef.current) {
@@ -54,7 +48,10 @@ export default function PhotoCanvas({ imageUrl, onSave, initialAnnotations, isSa
       }
     }
 
-    setCanvasSize()
+    // Use requestAnimationFrame to ensure canvas is laid out before sizing
+    requestAnimationFrame(() => {
+      setCanvasSize()
+    })
 
     // Re-size canvas on window resize (important for mobile orientation changes)
     window.addEventListener('resize', setCanvasSize)
@@ -262,10 +259,11 @@ export default function PhotoCanvas({ imageUrl, onSave, initialAnnotations, isSa
 
   return (
     <div className={`flex flex-col ${overlayControls ? 'h-full w-full' : 'space-y-2'}`}>
-      <div className={`relative ${fullScreen ? 'fixed inset-0 w-screen h-screen overflow-hidden' : 'border border-gray-300 rounded-lg overflow-hidden'}`}>
+      <div className={`relative w-full h-full ${fullScreen ? '' : 'border border-gray-300 rounded-lg'} overflow-hidden`}>
         <canvas
           ref={canvasRef}
-          className={`touch-none ${fullScreen ? 'w-full h-full' : 'w-full aspect-video'} bg-black`}
+          className={`touch-none w-full h-full bg-black`}
+          style={fullScreen ? { maxWidth: '100vw', maxHeight: '100vh' } : undefined}
           onMouseDown={startDrawing}
           onMouseMove={draw}
           onMouseUp={stopDrawing}
