@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma"
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { leadId: string } }
+  { params }: { params: Promise<{ leadId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -16,7 +16,7 @@ export async function GET(
       )
     }
 
-    const leadId = params.leadId
+    const { leadId } = await params
 
     // Get the lead with minimal information
     const lead = await prisma.lead.findUnique({
@@ -39,6 +39,7 @@ export async function GET(
             description: true,
             url: true,
             thumbnailUrl: true,
+            mimeType: true,
             createdAt: true,
           },
           orderBy: {

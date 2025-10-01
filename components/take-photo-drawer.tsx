@@ -16,7 +16,7 @@ interface SpeechRecognitionInterface {
   lang: string
   onstart: (() => void) | null
   onresult: ((event: unknown) => void) | null
-  onerror: (() => void) | null
+  onerror: ((event: unknown) => void) | null
   onend: (() => void) | null
   start: () => void
 }

@@ -8,7 +8,7 @@ import { prisma } from "@/lib/prisma"
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { contractorPhone: string } }
+  { params }: { params: Promise<{ contractorPhone: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -19,7 +19,7 @@ export async function GET(
       )
     }
 
-    const contractorPhone = params.contractorPhone
+    const { contractorPhone } = await params
     const normalizedPhone = contractorPhone.replace(/\D/g, "")
 
     // Verify contractor is accessing their own assignments

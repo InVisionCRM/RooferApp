@@ -61,7 +61,7 @@ async function ensureLeadMetadata(leadId: string): Promise<boolean> {
 export async function createPhotosFolder(leadId: string) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session?.user || !session.accessToken) {
+    if (!session?.user) {
       return { success: false, error: "Unauthorized" }
     }
 
@@ -87,40 +87,13 @@ export async function createPhotosFolder(leadId: string) {
       }
     }
 
-    // Initialize Google Drive service with access token
-    const driveService = new GoogleDriveService({ 
-      accessToken: session.accessToken 
-    })
-
-    // Create a "Photos" folder inside the lead's folder
-    const folderResult = await driveService.createFolder(
-      "Photos", 
-      { parentId: lead.googleDriveFolderId }
-    )
-
-    if (!folderResult.success || !folderResult.data) {
-      return { 
-        success: false, 
-        error: folderResult.message || "Failed to create Photos folder in Google Drive" 
-      }
-    }
-
-    // Store the Photos folder ID in the lead's metadata
-    await prisma.lead.update({
-      where: { id: leadId },
-      data: {
-        metadata: {
-          ...(lead.metadata as Record<string, unknown> || {}),
-          photosFolderId: folderResult.data.id
-        }
-      }
-    })
-
-    revalidatePath(`/leads/${leadId}`)
+    // NOTE: This function was for Google Drive integration
+    // Since we're now using Vercel Blob storage, Google Drive folder creation is not needed
+    // Photos are uploaded directly to Vercel Blob via the upload-video API route
     
     return { 
       success: true, 
-      folderId: folderResult.data.id
+      message: "Using Vercel Blob storage - folder creation not required"
     }
   } catch (error) {
     console.error("Error creating photos folder:", error)
@@ -159,7 +132,8 @@ export async function checkPhotosFolder(leadId: string) {
     }
 
     // Check if the Photos folder ID exists in metadata
-    const photosFolderId = lead.metadata?.photosFolderId
+    const metadata = lead.metadata as LeadMetadata | null
+    const photosFolderId = metadata?.photosFolderId
 
     return { 
       success: true, 

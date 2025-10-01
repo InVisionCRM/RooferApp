@@ -20,6 +20,7 @@ interface TakePhotoModalProps {
     thumbnailUrl: string
     name: string
     description: string | null
+    mimeType: string | null
     createdAt: string
     leadId: string
   }) => void
@@ -191,8 +192,22 @@ export default function TakePhotoModal({ open, onOpenChange, leadId, onPhotoSave
 
   const startSpeechRecognition = () => {
     if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) return
-    const SpeechRecognition = (window as { SpeechRecognition?: unknown; webkitSpeechRecognition?: unknown }).SpeechRecognition || (window as { SpeechRecognition?: unknown; webkitSpeechRecognition?: unknown }).webkitSpeechRecognition
-    const recognition = new (SpeechRecognition as { new(): unknown })()
+    
+    interface SpeechRecognitionInterface {
+      continuous: boolean
+      interimResults: boolean
+      lang: string
+      onstart: (() => void) | null
+      onresult: ((event: unknown) => void) | null
+      onerror: ((event: unknown) => void) | null
+      onend: (() => void) | null
+      start: () => void
+    }
+    
+    const SpeechRecognition = (window as { SpeechRecognition?: { new(): SpeechRecognitionInterface }; webkitSpeechRecognition?: { new(): SpeechRecognitionInterface } }).SpeechRecognition || (window as { SpeechRecognition?: { new(): SpeechRecognitionInterface }; webkitSpeechRecognition?: { new(): SpeechRecognitionInterface } }).webkitSpeechRecognition
+    if (!SpeechRecognition) return
+    
+    const recognition = new SpeechRecognition()
     recognition.continuous = false
     recognition.interimResults = false
     recognition.lang = "en-US"
@@ -277,6 +292,7 @@ export default function TakePhotoModal({ open, onOpenChange, leadId, onPhotoSave
             thumbnailUrl: result.photo.thumbnailUrl || result.photo.url,
             name: result.photo.name,
             description: result.photo.description,
+            mimeType: result.photo.mimeType,
             createdAt: result.photo.createdAt,
             leadId: result.photo.leadId,
           }
@@ -320,6 +336,7 @@ export default function TakePhotoModal({ open, onOpenChange, leadId, onPhotoSave
         thumbnailUrl: result.photo.thumbnailUrl || result.photo.url,
         name: result.photo.name,
         description: result.photo.description,
+        mimeType: result.photo.mimeType,
         createdAt: result.photo.createdAt.toISOString(),
         leadId: result.photo.leadId,
       }
